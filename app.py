@@ -36,24 +36,7 @@ def get_db_connection():
         port=port
     )
 
-def init_db():
-    # ... (rest of your init_db function remains the same)
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) UNIQUE NOT NULL,
-                password VARCHAR(255) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        conn.commit()
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        print(f"Database initialization error: {e}")
+
 
 @app.route('/')
 def index():
@@ -140,5 +123,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))

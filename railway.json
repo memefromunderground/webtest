@@ -1,0 +1,24 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "name": "flask-mysql-app",
+  "services": [
+    {
+      "name": "mysql-database",
+      "image": "mysql"
+    },
+    {
+      "name": "flask-app",
+      "buildCommand": "pip install -r requirements.txt",
+      "startCommand": "python app.py",
+      "postDeployCommands": [
+        "python init_db.py"
+      ],
+      "variables": {
+        "SECRET_KEY": "your-secret-key-change-this"
+      }
+    }
+  ],
+  "variables": {
+    "MYSQL_URL": "${{ mysql-database.MYSQL_URL }}"
+  }
+}
