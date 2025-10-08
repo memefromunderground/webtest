@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import os
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
-import os
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from urllib.parse import urlparse
 
 load_dotenv()
 
@@ -10,15 +11,33 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
 def get_db_connection():
+    # Prioritize Railway's internal service discovery variables for deployment
+    if os.getenv('MYSQL_URL'):
+        url = urlparse(os.getenv('MYSQL_URL'))
+        host = url.hostname
+        user = url.username
+        password = url.password
+        database = url.path[1:]
+        port = url.port
+    # Fallback to the DATABASE_URL for local development
+    else:
+        url = urlparse(os.getenv('DATABASE_URL'))
+        host = url.hostname
+        user = url.username
+        password = url.password
+        database = url.path[1:]
+        port = url.port
+
     return mysql.connector.connect(
-        host=os.getenv('DB_HOST'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        database=os.getenv('DB_NAME'),
-        port=int(os.getenv('DB_PORT', 3306))
+        host=host,
+        user=user,
+        password=password,
+        database=database,
+        port=port
     )
 
 def init_db():
+    # ... (rest of your init_db function remains the same)
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -38,12 +57,14 @@ def init_db():
 
 @app.route('/')
 def index():
+    # ... (rest of your code)
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # ... (rest of your code)
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -79,6 +100,7 @@ def register():
     
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # ... (rest of your code)
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -105,12 +127,14 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
+    # ... (rest of your code)
     if 'user_id' not in session:
         return redirect(url_for('login'))
     return render_template('dashboard.html', username=session['username'])
 
 @app.route('/logout')
 def logout():
+    # ... (rest of your code)
     session.clear()
     flash('Logged out successfully', 'success')
     return redirect(url_for('login'))
