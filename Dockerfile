@@ -1,26 +1,24 @@
-# Use a lightweight official Python image
-FROM python:3.11-slim
+# Use official Python runtime
+FROM python:3.9-slim
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
+# Set working directory
+WORKDIR /app
 
-# Install the necessary build dependencies for MySQL-python (Flask-MySQLdb)
-# and clean up afterward to keep the image small
-RUN apt-get update \
-    && apt-get install -y default-libmysqlclient-dev gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Copy requirements first for better caching
+COPY requirements.txt .
 
-# Copy the requirements file and install dependencies
-COPY requirements.txt ./
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application files
+# Copy application code
 COPY . .
 
-# Expose the default port for Flask
+# Expose port
 EXPOSE 5000
 
-# Command to run the application
-# Railway expects the container to listen on the PORT environment variable,
-# which defaults to 5000 in the app.py if not provided by Railway.
-CMD [ "python", "app.py" ]
+# Set environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+
+# Run the application
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
