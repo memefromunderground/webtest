@@ -62,16 +62,21 @@ def register():
             conn.commit()
             cursor.close()
             conn.close()
+            print(f"✅ User {username} registered successfully!")
             flash('Registration successful! Please login.', 'success')
             return redirect(url_for('login'))
-        except mysql.connector.IntegrityError:
+        except mysql.connector.IntegrityError as e:
+            print(f"❌ IntegrityError: {e}")
             flash('Username already exists', 'error')
+        except mysql.connector.Error as e:
+            print(f"❌ MySQL Error: {e}")
+            flash('Registration failed - Database error', 'error')
         except Exception as e:
+            print(f"❌ Unexpected error: {e}")
             flash('Registration failed', 'error')
-            print(f"Error: {e}")
         
     return render_template('register.html')
-
+    
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
